@@ -62,6 +62,7 @@ import cookieParser from 'cookie-parser';
 import { connectDB } from './db/connectDB.js';
 import authRouter from './routes/auth.route.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -77,7 +78,11 @@ app.use("/api/auth", authRouter);
 
 // Absolute path for the static directory
 // const staticPath = path.resolve('C:/Users/ASUS/OneDrive/Desktop/auth/frontend/dist');
-const staticPath = path.join(__dirname, 'frontend/dist');
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const staticPath = path.join(__dirname, '../frontend/dist');
 
 if (process.env.NODE_ENV === 'production') {
     // Serve the static files from the updated path
