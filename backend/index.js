@@ -76,7 +76,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 
 // Absolute path for the static directory
-const staticPath = path.resolve('C:/Users/ASUS/OneDrive/Desktop/auth/frontend/dist');
+// const staticPath = path.resolve('C:/Users/ASUS/OneDrive/Desktop/auth/frontend/dist');
+const staticPath = path.join(__dirname, 'frontend/dist');
 
 if (process.env.NODE_ENV === 'production') {
     // Serve the static files from the updated path
