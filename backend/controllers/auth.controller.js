@@ -151,8 +151,8 @@ export const forgotPassword =  async (req, res) => {
 
         user.resetPasswordExpiresAt = resetPasswordExpire;
         user.resetPasswordToken = resetPasswordToken;
-        await user.save();
-        await sendResetPasswordEmail(user.email, ` http://localhost:5173/reset-password/${resetPasswordToken}`);
+        await user.save();   
+        await sendResetPasswordEmail(user.email, `https://auth-ckav.onrender.com/reset-password/${resetPasswordToken}`);
         res.status(200).json({sucess: true, message: "Reset password token sent successfully"});
     }
     catch(err) {
