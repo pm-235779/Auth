@@ -12,17 +12,8 @@ export const useAuthStore = create((set) => ({
 	isLoading: false,
 	isCheckingAuth: true,
 	message: null,
-
-	// signup: async (email, password, name) => {
-	// 	set({ isLoading: true, error: null });
-	// 	try {
-	// 		const response = await axios.post(`${API_URL}/signup`, { email, password, name });
-	// 		set({ user: response.data.user, isAuthenticated: true, isLoading: false });
-	// 	} catch (error) {
-	// 		set({ error: error.response.data.message || "Error signing up", isLoading: false });
-	// 		throw error;
-	// 	}
-	// },
+	contacts: [], 
+	
 
 	signup: async (email, password, name,phone) => {
 		set({ isLoading: true, error: null });
@@ -95,20 +86,7 @@ export const useAuthStore = create((set) => ({
 			set({ error: null, isCheckingAuth: false, isAuthenticated: false });
 		}
 	},
-	// forgotPassword: async (email) => {
-	// 	set({ isLoading: true, error: null });
-	// 	try {
-	// 		const response = await axios.post(`${API_URL}/forgot-password`, { email });
-	// 		set({ message: response.data.message, isLoading: false });
-	// 	} catch (error) {
-	// 		set({
-	// 			isLoading: false,
-	// 			error: error.response.data.message || "Error sending reset password email",
-	// 		});
-	// 		throw error;
-	// 	}
-	// },
-
+	
 	forgotPassword: async (email) => {
 		set({ isLoading: true, error: null });
 		try {
@@ -145,4 +123,62 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
+  
+	// Fetch contacts
+	fetchContacts: async (id) => {
+	  set({ isLoadingContacts: true, errorContacts: null });
+	  try {
+		const response = await axios.get(`${API_URL}/contacts`);
+		set({ contacts: response.data.contacts, isLoadingContacts: false });
+		console.log("API Response:", response.data);
+		console.log("Contacts:", response.data.contacts);
+		console.log("diuigfnucw");
+	  } catch (error) {
+		set({
+		  errorContacts: error.response?.data?.message || "Error fetching contacts",
+		  isLoadingContacts: false,
+		});
+		console.error("Error fetching contacts:", error);
+	  }
+	},
+  
+	// Delete a contact
+	deleteContact: async (contactId) => {
+	  set({ isLoadingContacts: true, errorContacts: null });
+	  try {
+		await axios.delete(`${API_URL}/${contactId}`);
+		set((state) => ({
+		  contacts: state.contacts.filter(contact => contact.id !== contactId),
+		  isLoadingContacts: false,
+		}));
+	  } catch (error) {
+		set({
+		  errorContacts: error.response?.data?.message || "Error deleting contact",
+		  isLoadingContacts: false,
+		});
+		console.error("Error deleting contact:", error);
+	  }
+	},
+  
+	// Update a contact
+	updateContact: async (contactId, updatedContactData) => {
+	  set({ isLoadingContacts: true, errorContacts: null });
+	  try {
+		const response = await axios.put(`${API_URL}/${contactId}`, updatedContactData);
+		set((state) => ({
+		  contacts: state.contacts.map(contact =>
+			contact.id === contactId ? response.data : contact
+		  ),
+		  isLoadingContacts: false,
+		}));
+	  } catch (error) {
+		set({
+		  errorContacts: error.response?.data?.message || "Error updating contact",
+		  isLoadingContacts: false,
+		});
+		console.error("Error updating contact:", error);
+	  }
+	},
+
 }));
