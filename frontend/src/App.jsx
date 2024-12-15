@@ -4,9 +4,14 @@ import FloatingShape from "./components/FloatingShape";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
-import DashboardPage from "./pages/DashboardPage";
+import {DashboardPage} from "./pages/DashboardPage";
+import ContactsPage from "./pages/ContactsPage";
+import UpdateContactPage from "./pages/UpdateContactPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+
+
+
 
 import LoadingSpinner from "./components/LoadingSpinner";
 
@@ -101,6 +106,47 @@ function App() {
 						</RedirectAuthenticatedUser>
 					}
 				/>
+
+                {/* <Route
+					path='/contacts'
+					element={
+						<ProtectedRoute>
+							<ContactsPage />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route 
+				path='/contacts/:id' 
+				element={
+					
+				}
+				/>
+				<Route 
+				path='/contacts/:id'
+				element={
+					
+				}
+				/> */}
+
+
+<Route
+          path="/contacts"
+          element={
+            <ProtectedRoute>
+              <ContactsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contacts/:id/update"
+          element={
+            <ProtectedRoute>
+              <UpdateContactPage />
+            </ProtectedRoute>
+          }
+        />
+
 				{/* catch all routes */}
 				<Route path='*' element={<Navigate to='/' replace />} />
 			</Routes>
