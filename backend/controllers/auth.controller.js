@@ -7,64 +7,84 @@ import { sendVerificationEmail } from '../mailtrap/emails.js';
 import { sendWelcomeEmail } from '../mailtrap/emails.js';
 import { sendResetPasswordEmail } from '../mailtrap/emails.js';
 import { sendResetPasswordSuccessEmail } from '../mailtrap/emails.js';
-// import { API_URL } from '../../frontend/src/store/authStore.js';
 
-// import { generateVerificationCode } from '../utils/generateVerificationcode.js';
 
-export const signup =  async (req, res) => {
-    // res.send("Signup route"); 
-   const {name, email, password, phone} = req.body;
-   try {
-    if(!name || !email || !password || !phone) {
-        return res.status(400).json({message: "All fields are required"});
-   }
-   
-   const userAlreadyExists = await User.findOne({ 
-    $or: [{ email }, { phone }] 
-  });
+
+export const signup = async (req, res) => {
+    const { name, email, password, phone } = req.body;
   
-  if (userAlreadyExists) {
-    return res.status(400).json({sucess: false, message: "User already exists"});
-  }
+    try {
+      // Validate input
+      if (!name || !email || !password || !phone) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+  
+      // Check if user already exists
+      const userAlreadyExists = await User.findOne({
+        $or: [{ email }, { phone }],
+      });
+  
+      if (userAlreadyExists) {
+        return res.status(400).json({
+          success: false,
+          message: "User already exists",
+        });
+      }
+  
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Set default verification values
+      let isVerified = true; // Default: Verified for all users except your email
+      let verificationToken, verificationTokenExpiresAt;
+  
+      // If email is yours, require verification
+      if (email === "pukhrajmotwani239@gmail.com") {
+        isVerified = false;
+        verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+      }
+  
+      // Create the user
+      const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        phone,
+        isVerified,
+        verificationToken,
+        verificationTokenExpiresAt,
+      });
+  
+      await user.save();
+  
+      // Generate token and log in the user
+      generateTokenAndSetCookie(res, user._id);
+  
+      // Send verification email only to your email
+      if (email === "pukhrajmotwani239@gmail.com") {
+        await sendVerificationEmail(user.email, verificationToken);
+      }
+  
+      // Respond with success
+      res.status(201).json({
+        success: true,
+        message:
+          email === "pukhrajmotwani239@gmail.com"
+            ? "User created successfully. Verification email sent."
+            : "User created and logged in successfully.",
+        user: {
+          ...user._doc,
+          password: undefined, // Hide hashed password in the response
+        },
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  };
+  
 
-  const hashedPassword = await bcrypt.hash(password,10);
 
-  const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    phone,
-    verificationToken,
-    verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000
-  });
-
-
-await user.save();
- 
-generateTokenAndSetCookie(res, user._id);
-
-await sendVerificationEmail(user.email, verificationToken);
-
-
-res.status(201).json({
-    sucess: true,
-     message: "User created successfully",
-     user:{
-        ...user._doc,
-        password: undefined
-     }
-    });
-
-}
-   catch(err) {
-    res.status(500).json({sucess: false, message: err.message});
-   }
-
-
-
-}
 
 export const verifyEmail =  async (req, res) => {
     const {code} = req.body;
@@ -122,9 +142,7 @@ export const login =  async (req, res) => {
             password: undefined
         }
         });
-        if(!user.isVerified) {
-            await sendVerificationEmail(user.email, user.verificationToken);
-        }
+        
     }
     catch(err) {
         res.status(500).json({sucess: false, message: err.message});
@@ -151,8 +169,8 @@ export const forgotPassword =  async (req, res) => {
 
         user.resetPasswordExpiresAt = resetPasswordExpire;
         user.resetPasswordToken = resetPasswordToken;
-        await user.save();   
-        await sendResetPasswordEmail(user.email, `https://auth-ckav.onrender.com/reset-password/${resetPasswordToken}`);
+        await user.save();
+        await sendResetPasswordEmail(user.email, ` http://localhost:5173/reset-password/${resetPasswordToken}`);
         res.status(200).json({sucess: true, message: "Reset password token sent successfully"});
     }
     catch(err) {
